@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#9c302d">
+  <meta name="description" content="在同一局象棋里拆出多张棋盘，并排比较不同应对。">
+  <title>棋研 · 象棋分盘推演</title>
+  <link rel="stylesheet" href="./pages/studio.css">
+  <script type="module" src="./pages/studio.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">棋</span><span>棋研 <small>XIANGQI STUDIO</small></span></div>
+      <div class="header-actions">
+        <button type="button" class="button subtle" id="example">载入示例</button>
+        <button type="button" class="button subtle" id="new-study">新建棋局</button>
+      </div>
+    </div>
+  </header>
+  <main class="workspace">
+    <section class="intro" aria-labelledby="title">
+      <div>
+        <h1 id="title">分盘推演</h1>
+        <p>从同一局面走出不同棋路，并排比较每一种应对。</p>
+      </div>
+      <div class="workspace-actions">
+        <button type="button" class="button subtle narrow-toggle" id="expand" aria-pressed="false">放大棋盘</button>
+        <button type="button" class="button subtle" id="flip" aria-pressed="false">翻转棋盘</button>
+        <button type="button" class="button primary" id="fork-active"><span aria-hidden="true">＋</span> 拆分棋盘</button>
+      </div>
+    </section>
+    <section class="boards" id="boards" aria-label="并排棋盘"></section>
+    <footer class="workspace-footer">
+      <span id="save-state">棋局自动保存在当前浏览器</span>
+      <div class="file-actions">
+        <button type="button" class="text-button" id="import">导入棋谱</button>
+        <button type="button" class="text-button" id="export">导出当前棋谱</button>
+        <input id="import-file" type="file" accept=".pgn,.txt" hidden>
+      </div>
+    </footer>
+    <p class="sr-only" role="status" id="announcement"></p>
+    <p class="notice" role="alert" id="notice" hidden></p>
+    <noscript>请启用 JavaScript 以使用棋盘。</noscript>
+  </main>
+  <template id="board-card">
+    <article class="board-card">
+      <header class="card-header">
+        <div class="card-title">
+          <span class="board-symbol" aria-hidden="true"></span>
+          <div><h2></h2><p class="origin"></p></div>
+        </div>
+        <div class="card-actions">
+          <button type="button" class="icon-button fork" title="从这里拆分棋盘" aria-label="从这里拆分棋盘">＋</button>
+          <button type="button" class="icon-button remove" title="移除棋盘" aria-label="移除棋盘">×</button>
+        </div>
+      </header>
+      <div class="board-area">
+        <div class="board" role="group">
+          <canvas width="960" height="1076" aria-hidden="true"></canvas>
+          <div class="squares"></div>
+        </div>
+      </div>
+      <div class="game-bar">
+        <span class="turn"><span class="turn-dot"></span><span class="turn-label"></span></span>
+        <span class="ply-count"></span>
+        <button type="button" class="button engine">电脑走一步</button>
+      </div>
+      <div class="history">
+        <div class="history-top">
+          <h3>走子记录</h3>
+          <div class="playback" role="group" aria-label="复盘控制">
+            <button type="button" class="icon-button" data-step="start" title="回到开局" aria-label="回到开局">⏮</button>
+            <button type="button" class="icon-button" data-step="previous" title="上一步" aria-label="上一步">‹</button>
+            <button type="button" class="icon-button" data-step="next" title="下一步" aria-label="下一步">›</button>
+            <button type="button" class="icon-button" data-step="end" title="跳到最新" aria-label="跳到最新">⏭</button>
+          </div>
+        </div>
+        <div class="move-list"></div>
+        <p class="board-message" role="status" hidden></p>
+      </div>
+    </article>
+  </template>
+</body>
+</html>

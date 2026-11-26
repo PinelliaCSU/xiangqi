@@ -1,0 +1,14 @@
+Fairy-Stockfish WebAssembly 1.1.12
+Copyright Fabian Fichter and the Fairy-Stockfish / Stockfish contributors.
+License: GPL-3.0. See Copying.txt and AUTHORS in this directory.
+Exact corresponding source and build instructions:
+https://github.com/fairy-stockfish/fairy-stockfish.wasm/tree/b2e693ef1e111233ce3fb40685921708b3276ed6
+Upstream binary distribution:
+https://www.npmjs.com/package/fairy-stockfish-nnue.wasm/v/1.1.12
+
+xiangqi-c07e94a5c7cb.nnue
+SHA-256: c07e94a5c7cbeae443ed79a8fa412875d833a7f8e04333815e39729c59d52e11
+Trained for Fairy-Stockfish by the Pikafish developers. Released under CC0 1.0.
+https://github.com/fairy-stockfish/Fairy-Stockfish-NNUE/blob/master/xiangqi-c07e94a5c7cb.nnue
+https://www.pikafish.com/en/list.html
+https://creativecommons.org/publicdomain/zero/1.0/

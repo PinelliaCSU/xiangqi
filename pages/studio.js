@@ -1,4 +1,5 @@
 import { BoardView } from './board.js';
+import { fairyMove, preferredEngine, selectEngine } from './fairy.js';
 import { boardName, createExample, createStudy, playMove, replay, restoreStudy, splitBoard } from './study.js';
 import { gameStatus, inCheck, positionToFen, RED } from '../shared/rules.js';
 import { reasonText, resultText } from '../shared/notation.js';
@@ -8,6 +9,9 @@ const $ = selector => document.querySelector(selector);
 const STORAGE = 'xiangqi-studio-pages-v1';
 const container = $('#boards');
 const views = new Map();
+const modePicker = $('#engine-mode');
+modePicker.value = preferredEngine();
+if (!self.crossOriginIsolated && modePicker.value === 'nnue') modePicker.value = 'fast';
 let study = createStudy();
 try {
   const saved = localStorage.getItem(STORAGE);
@@ -140,11 +144,37 @@ function pick(board, square) {
   renderBoard(board);
 }
 
-function playComputer(board) {
+function reportEngine(message) {
+  const status = $('#engine-status');
+  status.textContent = message;
+  status.hidden = !message;
+}
+
+async function playComputer(board) {
   const view = views.get(board.id);
   if (view.worker || !view.legal.length) return;
   view.selected = null;
   view.error = '';
+  const fen = positionToFen(view.position);
+  if (modePicker.value === 'nnue') {
+    const controller = new AbortController();
+    view.worker = {terminate: () => controller.abort()};
+    reportEngine('进阶引擎正在准备这一手…');
+    renderBoard(board);
+    try {
+      const suggested = await fairyMove(fen, controller.signal, reportEngine);
+      if (controller.signal.aborted) return;
+      const move = view.legal.find(({from, to}) => suggested.from === from && suggested.to === to);
+      if (!move) throw new Error('进阶引擎的走法与当前棋规不符');
+      reportEngine('已使用 Fairy-Stockfish NNUE');
+      commitMove(board, move);
+      return;
+    } catch {
+      if (controller.signal.aborted) return;
+      cancelWorker(view);
+      reportEngine('进阶引擎暂不可用，本手由快速引擎完成。');
+    }
+  }
   const failed = () => {
     cancelWorker(view);
     view.error = '电脑暂时无法走棋，请重试。';
@@ -162,7 +192,7 @@ function playComputer(board) {
     worker.onerror = () => {
       if (view.worker === worker) failed();
     };
-    worker.postMessage(positionToFen(view.position));
+    worker.postMessage(fen);
     renderBoard(board);
   } catch {
     failed();
@@ -251,6 +281,22 @@ function activeBoard() {
 }
 
 $('#fork-active').addEventListener('click', () => fork(activeBoard()));
+modePicker.addEventListener('change', async () => {
+  reportEngine(modePicker.value === 'nnue' ? '已选择进阶引擎，首次走棋时下载模型。' : '');
+  try {
+    if (modePicker.value === 'nnue' && !self.crossOriginIsolated) {
+      modePicker.disabled = true;
+      reportEngine('正在启用进阶引擎，页面将重载一次。');
+      save();
+    }
+    await selectEngine(modePicker.value);
+  } catch (error) {
+    modePicker.value = 'fast';
+    modePicker.disabled = false;
+    reportEngine(error.message);
+    await selectEngine('fast');
+  }
+});
 $('#expand').addEventListener('click', () => {
   const expanded = container.classList.toggle('expanded');
   $('#expand').setAttribute('aria-pressed', expanded);

@@ -26,14 +26,20 @@
         <p>从同一局面走出不同棋路，并排比较每一种应对。</p>
       </div>
       <div class="workspace-actions">
+        <select class="button" id="engine-mode" aria-label="电脑引擎">
+          <option value="fast">快速引擎</option>
+          <option value="nnue">进阶引擎 · NNUE</option>
+        </select>
         <button type="button" class="button subtle narrow-toggle" id="expand" aria-pressed="false">放大棋盘</button>
         <button type="button" class="button subtle" id="flip" aria-pressed="false">翻转棋盘</button>
         <button type="button" class="button primary" id="fork-active"><span aria-hidden="true">＋</span> 拆分棋盘</button>
       </div>
     </section>
+    <p class="engine-status" role="status" id="engine-status" hidden></p>
     <section class="boards" id="boards" aria-label="并排棋盘"></section>
     <footer class="workspace-footer">
       <span id="save-state">棋局自动保存在当前浏览器</span>
+      <a class="text-button" href="./vendor/fairy-stockfish/NOTICE.txt">引擎许可</a>
       <div class="file-actions">
         <button type="button" class="text-button" id="import">导入棋谱</button>
         <button type="button" class="text-button" id="export">导出当前棋谱</button>

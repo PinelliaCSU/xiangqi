@@ -47,6 +47,9 @@ p, h1, h2, h3 { margin: 0; }
 .intro h1 { color: #862c27; font-size: clamp(2rem, 4.5vw, 3.1rem); font-family: var(--serif); line-height: 1.13; letter-spacing: .03em; }
 .intro p { color: var(--muted); margin-top: 10px; line-height: 1.55; }
 .workspace-actions { padding-bottom: 2px; }
+.workspace-actions { flex-wrap: wrap; }
+#engine-mode { max-width: 100%; }
+.engine-status { margin-block: -6px 12px; color: var(--muted); font-size: .875rem; }
 .boards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
 .board-card {
   min-width: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 15px;

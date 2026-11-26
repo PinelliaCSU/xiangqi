@@ -53,7 +53,11 @@ export function fairyMove(fen, signal, onProgress) {
     return new Promise((resolve, reject) => {
       const instance = worker;
       const id = ++sequence;
-      const timer = setTimeout(() => fail(new Error('进阶引擎未及时返回')), 45000);
+      let timer;
+      function waitForProgress() {
+        clearTimeout(timer);
+        timer = setTimeout(() => fail(new Error('进阶引擎未及时返回')), 45000);
+      }
       function cleanup() {
         clearTimeout(timer);
         instance.onmessage = null;
@@ -67,7 +71,10 @@ export function fairyMove(fen, signal, onProgress) {
       }
       instance.onerror = () => fail(new Error('进阶引擎加载失败'));
       instance.onmessage = ({data}) => {
-        if (data.progress && !signal.aborted) onProgress(data.progress);
+        if (data.progress) {
+          waitForProgress();
+          if (!signal.aborted) onProgress(data.progress);
+        }
         if (data.id !== id) return;
         if (data.error) {
           fail(new Error(data.error));
@@ -81,6 +88,7 @@ export function fairyMove(fen, signal, onProgress) {
           fail(error);
         }
       };
+      waitForProgress();
       instance.postMessage({id, fen});
     });
   });

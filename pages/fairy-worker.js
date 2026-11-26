@@ -1,6 +1,7 @@
 const directory = new URL('../vendor/fairy-stockfish/', self.location.href);
 const model = 'xiangqi-c07e94a5c7cb.nnue';
 const modelPath = '/' + model;
+const modelSize = 11261932;
 let stockfish;
 let receive;
 
@@ -19,22 +20,44 @@ function waitFor(command, accepts) {
   });
 }
 
-async function prepare() {
+async function fetchWeights() {
   self.postMessage({progress: '正在下载进阶引擎和象棋模型…'});
-  const download = fetch(new URL(model, directory));
+  const response = await fetch(new URL(model, directory));
+  if (!response.ok) throw new Error('NNUE HTTP ' + response.status);
+  const reader = response.body.getReader();
+  const weights = new Uint8Array(modelSize);
+  let received = 0;
+  let shown = -1;
+  try {
+    while (true) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      weights.set(value, received);
+      received += value.length;
+      const percent = Math.floor(received * 100 / modelSize);
+      if (percent !== shown) {
+        shown = percent;
+        self.postMessage({progress: `正在下载象棋模型… ${percent}%`});
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  if (received !== modelSize) throw new Error('Unexpected NNUE size');
+  return weights;
+}
+
+async function prepare() {
+  const weights = await fetchWeights();
   const script = new URL('stockfish.js', directory).href;
   importScripts(script);
-  const response = await download;
-  if (!response.ok) throw new Error('NNUE HTTP ' + response.status);
-  const buffer = await response.arrayBuffer();
-  if (buffer.byteLength !== 11261932) throw new Error('Unexpected NNUE size');
   stockfish = await Stockfish({
     locateFile: file => new URL(file, directory).href,
     mainScriptUrlOrBlob: script,
   });
   stockfish.addMessageListener(line => receive?.(line));
   await waitFor('uci', line => line === 'uciok');
-  stockfish.FS.writeFile(modelPath, new Uint8Array(buffer));
+  stockfish.FS.writeFile(modelPath, weights);
   stockfish.postMessage('setoption name UCI_Variant value xiangqi');
   stockfish.postMessage('setoption name EvalFile value ' + modelPath);
   stockfish.postMessage('setoption name Use NNUE value true');
